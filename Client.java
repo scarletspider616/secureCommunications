@@ -16,6 +16,7 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
+import javax.crypto.ShortBufferException;
 
 // JSON
 
@@ -80,7 +81,7 @@ public class Client {
 
 	private void handshakeWithServer() throws IOException, 
 			ClassNotFoundException, NoSuchAlgorithmException, 
-			InvalidKeyException {
+			InvalidKeyException, ShortBufferException {
 		System.out.println("handshake with server...");
 		out = new ObjectOutputStream(socket.getOutputStream());
 
@@ -100,11 +101,14 @@ public class Client {
 	}
 
 	private void createSharedKey() throws NoSuchAlgorithmException,
-			InvalidKeyException {
+			InvalidKeyException, ShortBufferException {
 		System.out.println("generating shared key...");
 		KeyAgreement sharedKeyGenerator = KeyAgreement.getInstance("DH");
 		sharedKeyGenerator.init(secretKey);
-		sharedKey = sharedKeyGenerator.doPhase(serverKey, true);
-		System.out.println(sharedKey);
+		sharedKeyGenerator.doPhase(serverKey, true);
+		byte [] sharedKey = new byte[500];
+		sharedKeyGenerator.generateSecret(sharedKey, 0);
+		String s = new String(sharedKey);
+		System.out.println(s);
 	}
 }

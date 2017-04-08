@@ -18,6 +18,8 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import javax.crypto.ShortBufferException;
+
 
 public class ServerThread extends Thread {
 	// private FileManager fm;
@@ -67,7 +69,8 @@ public class ServerThread extends Thread {
 	}
 
 	private void handshakeWithClient() throws IOException, 
-			ClassNotFoundException, NoSuchAlgorithmException, InvalidKeyException {
+			ClassNotFoundException, NoSuchAlgorithmException, 
+			InvalidKeyException, ShortBufferException {
 		System.out.println("client no. " + String.valueOf(requestNumber) 
 			+ ": handshake with client...");		
 		// get client's public key
@@ -85,13 +88,18 @@ public class ServerThread extends Thread {
 	}
 
 	private void createSharedKey() throws NoSuchAlgorithmException,
-			InvalidKeyException {
+			InvalidKeyException, ShortBufferException {
 		System.out.println("client no. " + String.valueOf(requestNumber) 
 			+ ": generating shared key...");
 		KeyAgreement sharedKeyGenerator = KeyAgreement.getInstance("DH");
+		System.out.println("init generator...");
 		sharedKeyGenerator.init(secretKey);
-		sharedKey = sharedKeyGenerator.doPhase(clientKey, true);
-		System.out.println(sharedKey);
+		System.out.println("generating secret...");
+		sharedKeyGenerator.doPhase(clientKey, true);
+		byte [] sharedKey = new byte[500];
+		sharedKeyGenerator.generateSecret(sharedKey, 0);
+		String s = new String(sharedKey);
+		System.out.println(s);
 	}
 
 
