@@ -9,20 +9,26 @@ import java.security.NoSuchAlgorithmException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Key;
+import javax.crypto.KeyAgreement;
+import java.security.InvalidKeyException;
 
 // I/O
 import java.net.Socket;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class ServerThread extends Thread {
 	// private FileManager fm;
 	private int requestNumber;
 	private Socket socket;
-	private BufferedReader in;
-	private PrintWriter out;
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
+	private PrivateKey secretKey;
+	private PublicKey publicKey;
+	private PublicKey clientKey;
+	private Key sharedKey;
 	
 	public ServerThread(Socket socket, int requestNumber) {
 		this.socket = socket;
@@ -33,7 +39,10 @@ public class ServerThread extends Thread {
 	}
 
 	public void run() {
-		negotiateKey();
+		createKeys();
+		try {
+			handshakeWithClient();
+		} catch (Exception e) {}
 
 	}
 
@@ -42,13 +51,13 @@ public class ServerThread extends Thread {
 	* exist in the shadow file
 	**/
 
-	private void negotiateKey() {
+	private void createKeys() {
 		try {
 			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DH");
 			keyGen.initialize(512); // 32-bit keys are used for this project
 			KeyPair keys = keyGen.genKeyPair();
-			PublicKey pubKey = keys.getPublic();
-			PrivateKey privKey = keys.getPrivate();
+			publicKey = keys.getPublic();
+			secretKey = keys.getPrivate();
 		} catch (Exception e) {
 			System.out.println(this.toString() + " failed. (Request num: " +
 				String.valueOf(requestNumber) + ") Details: ");
@@ -57,17 +66,51 @@ public class ServerThread extends Thread {
 
 	}
 
-	private void establishSocket() throws IOException {
-		in = new BufferedReader(
-			new InputStreamReader(socket.getInputStream()));
-		out = new PrintWriter(socket.getOutputStream(), true);
-		String inString = in.readLine();
-		while (inString != null) {
-			System.out.println(inString);
-			inString = in.readLine();
-		}
+	private void handshakeWithClient() throws IOException, 
+			ClassNotFoundException, NoSuchAlgorithmException, InvalidKeyException {
+		System.out.println("client no. " + String.valueOf(requestNumber) 
+			+ ": handshake with client...");		
+		// get client's public key
+		in = new ObjectInputStream(socket.getInputStream());
+		clientKey = (PublicKey) in.readObject();
+		System.out.println("client no. " + String.valueOf(requestNumber) 
+			+ ": public key: " + clientKey.toString());
+
+		// send server's public key to client 
+		out = new ObjectOutputStream(socket.getOutputStream());
+		out.writeObject(publicKey);
+
+		// create shared key
+		createSharedKey();
 	}
-	// public checkShadowFile(String user, String pass) {
-	// 	fm.check
-	// }
+
+	private void createSharedKey() throws NoSuchAlgorithmException,
+			InvalidKeyException {
+		System.out.println("client no. " + String.valueOf(requestNumber) 
+			+ ": generating shared key...");
+		KeyAgreement sharedKeyGenerator = KeyAgreement.getInstance("DH");
+		sharedKeyGenerator.init(secretKey);
+		sharedKey = sharedKeyGenerator.doPhase(clientKey, true);
+		System.out.println(sharedKey);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
