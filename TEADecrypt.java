@@ -41,12 +41,12 @@ public class TEADecrypt {
 		(byte) 0xbfbd, (byte) 0x1aef, (byte) 0xbfbd, (byte) 0x52ef, 
 		(byte) 0xbfbd, (byte) 0x3647, (byte) 0xd1b2, (byte) 0xefbf, 
 		(byte) 0xbd71, (byte) 0x074d, (byte) 0x1400, (byte) 0x750a}; 
-		String string = "Hello World!!";
+		String string = "Hello World!!!";
 		// byte[] byteValue = new byte[string.length() + 
 		// 			(4-(string.length()%4))]; // add necessary padding
 		// byteValue  = byteValue + pad;
 
-		String test = "hello world!";
+		String test = "hello world!!";
 		int [] encrypted = TEAEncrypt.encrypt(test, byteKey);
 		int [] result = decrypt(encrypted, byteKey);
 		System.out.println(convertIntArrayToString(result));
@@ -60,6 +60,28 @@ public class TEADecrypt {
 		// }
 	}
 
+		public static String decryptToString(String value, String key) {
+		return convertIntArrayToString(decrypt(convertStringToIntArray(value), 
+					convertStringToIntArray(key)));
+	}
+
+	public static String decryptToString(String value, byte[] key) {
+		return convertIntArrayToString(decrypt(convertStringToIntArray(value), 
+					convertStringToIntArray(new String(key, 
+						Charset.forName("UTF-8")))));
+	}
+
+	public static String decryptToString(int[] value, int[] key) {
+		int [] result = new TEADecrypt().runTEADecrypt(value, key);
+		return convertIntArrayToString(result);
+	}
+
+	public static String decryptToString(int [] value, byte[] key) {
+		int [] result = new TEADecrypt().runTEADecrypt(value  ,
+			convertStringToIntArray(new String(
+				key, Charset.forName("UTF-8"))));
+		return convertIntArrayToString(result);
+	}
 	public static int[] decrypt(String value, String key) {
 		return decrypt(convertStringToIntArray(value), 
 					convertStringToIntArray(key));

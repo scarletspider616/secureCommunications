@@ -83,7 +83,7 @@ public class ShadowTableGenerator {
     		String salt = new String(random);
 
 	   		// hash the password + salt
-    		int[] hash = TEAEncrypt.encrypt(password, key);
+    		int[] hash = TEAEncrypt.encrypt(password+salt, key);
     		String hashedPass = "";
     		for (int i: hash) {
     			hashedPass = hashedPass + String.valueOf(i) +  " ";
