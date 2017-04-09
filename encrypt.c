@@ -9,7 +9,7 @@ void encrypt(int *, int *);
 // https://www3.ntu.edu.sg/home/ehchua/programming/java/JavaNativeInterface.html
 
 // JNI func
-JNIEXPORT jintArray JNICALL Java_InsertionSort_runInsertionSort( 
+JNIEXPORT jintArray JNICALL Java_TEAEncrypt_runTEAEncrypt( 
 	JNIEnv * env, jobject thisObj, jintArray value, 
 	jintArray key) {
 	// convert from java data types to C data types

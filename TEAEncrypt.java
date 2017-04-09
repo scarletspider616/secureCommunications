@@ -6,12 +6,12 @@
 import java.util.Scanner;
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 public class TEAEncrypt {
 	// private int[] result;
-	private static int memCount;
 	static {
-		System.loadLibrary("Encrypt");
+		System.load("/Users/jm/code/secureCommunications/libTEAEncrypt.dylib");
 	}
 
 	// public InsertionSort(int[] inputData) {
@@ -46,20 +46,16 @@ public class TEAEncrypt {
 		// 			(4-(string.length()%4))]; // add necessary padding
 		// byteValue  = byteValue + pad;
 
-		while (string.length() %8 != 0) {
-			string = string + " ";
+		int [] value = convertStringToIntArray(string);
+		int [] key = convertStringToIntArray(new String(
+			byteKey, Charset.forName("UTF-8")));
+		int [] result = encrypt(value, key);
+		for (int i: result) {
+			System.out.println(i);
 		}
-		byte[] byteValue = string.getBytes();
-		System.out.println(byteValue.length);
-		ByteBuffer key = ByteBuffer.wrap(byteKey);
-		ByteBuffer value = ByteBuffer.wrap(byteValue);
+		System.out.println("survived");
 
-		
-
-		while(value.hasRemaining()) {
-			System.out.println(value.getInt());
-		}
-
+		// encrypt(value, key);
 		// TEAEncrypt.encrypt(value.getInt(), key.getInt());
 		// int[] sortThis = {-15, 4, 99, 0, 87, 32, 1, -1}; // 4 initial testing only
 		// int[] result = new TEAEncrypt().runTEAEncrypt();
@@ -68,9 +64,37 @@ public class TEAEncrypt {
 		// }
 	}
 
+	public static int[] encrypt(String value, String key) {
+		return encrypt(convertStringToIntArray(value), 
+					convertStringToIntArray(key));
+	}
+
+	public static int[] encrypt(String value, byte[] key) {
+		return encrypt(convertStringToIntArray(value), 
+					convertStringToIntArray(new String(key, 
+						Charset.forName("UTF-8"))));
+	}
+
 	public static int[] encrypt(int[] value, int[] key) {
 		// mem count is stored in the last element of the array
 		int [] result = new TEAEncrypt().runTEAEncrypt(value, key);
 		return result;
+	}
+
+	public static int[] convertStringToIntArray(String string) {
+		while (string.getBytes().length % 8 != 0) {
+			string = string + " ";
+		}
+		byte[] byteValue = string.getBytes();
+		ByteBuffer value = ByteBuffer.wrap(byteValue);
+
+		int [] input = new int[byteValue.length/4];
+		int i = 0;
+		while(value.hasRemaining()) {
+			input[i] = value.getInt();
+			i++;
+
+		}
+		return input;
 	}
 }

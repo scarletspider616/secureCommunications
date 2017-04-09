@@ -6,11 +6,11 @@ CARGS=
 
 MACFLAGS=-c -fPIC -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers/ 
 
-LINUXFLAGS=-shared -fpic -o libEncrypt.so -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux/ 
+LINUXFLAGS=-shared -fpic -o encrypt.so -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux/ 
 
 LINUXARGS=encrypt.c
 
-MACARGS=encrypt.c -o libEncrypt.o
+MACARGS=encrypt.c -o encrypt.o
 
 UNAME_S:=$(shell uname -s)
 ifeq ($(UNAME_S),Linux)
@@ -19,7 +19,7 @@ ifeq ($(UNAME_S),Linux)
 endif
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS+=$(MACFLAGS)
-	MACSTEP+=libtool -dynamic -lSystem libEncrypt.o -o libEncrypt.dylib 
+	MACSTEP+=libtool -dynamic -lSystem encrypt.o -o libTEAEncrypt.dylib 
 	CARGS+=$(MACARGS)
 endif
 
@@ -45,4 +45,4 @@ setjavapath:
 	# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
 
 clean:
-	rm -f *.class libEncrypt.* encrypt.h *.log
+	rm -f *.class libEncrypt.* encrypt.h *.log *.o

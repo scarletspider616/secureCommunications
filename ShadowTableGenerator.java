@@ -10,6 +10,8 @@ import java.security.Key;
 
 
 public class ShadowTableGenerator {
+
+
 	// since this is made for demonstration purposes no attempt is 
 	// made to hide this key. TES is NOT one-way, however the purpose
 	// of this excersize is NOT to create password tables. For 
