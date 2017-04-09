@@ -108,7 +108,5 @@ public class Client {
 		sharedKeyGenerator.doPhase(serverKey, true);
 		byte [] sharedKey = new byte[500];
 		sharedKeyGenerator.generateSecret(sharedKey, 0);
-		String s = new String(sharedKey);
-		System.out.println(s);
 	}
 }
