@@ -24,9 +24,9 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 runEncryptionTest: all
-	java -Djava.library.path=. Encrypt
+	java -Djava.library.path=. TEAEncrypt
 
-all: compilejava createJNIheader makenative linklibrary setjavapath others
+all: compilejava createJNIheader makenative linklibrary setjavapath
 
 compilejava: 
 	javac TEAEncrypt.java

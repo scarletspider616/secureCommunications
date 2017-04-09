@@ -2,11 +2,9 @@
 
 #include <jni.h>
 #include <stdio.h>
-#include "InsertionSort.h"
+#include "TEAEncrypt.h"
 
-void insertion_sort(int *, int, int *);
-void swap(int *, int, int, int, int *);
-void save_count(int);
+void encrypt(int *, int *);
 // JNI tutorial used as reference: 
 // https://www3.ntu.edu.sg/home/ehchua/programming/java/JavaNativeInterface.html
 
@@ -15,19 +13,19 @@ JNIEXPORT jintArray JNICALL Java_InsertionSort_runInsertionSort(
 	JNIEnv * env, jobject thisObj, jintArray value, 
 	jintArray key) {
 	// convert from java data types to C data types
-	jint * value = (*env)->GetIntArrayElements(env, value, NULL);
+	jint * in_value = (*env)->GetIntArrayElements(env, value, NULL);
 	if (value == NULL) {
 		return NULL;
 	}
 	jsize value_length = (*env)->GetArrayLength(env, value);
 
-	jint * key = (*env)->GetIntArrayElements(env, key, NULL);
+	jint * in_key = (*env)->GetIntArrayElements(env, key, NULL);
 	if (key == NULL) {
 		return NULL;
 	}
 	jsize key_length = (*env)->GetArrayLength(env, key);
 
-	encrypt(value, key);
+	encrypt(in_value, in_key);
 
 	// convert back to java data types and output 
 	jintArray output = (*env)->NewIntArray(env, value_length);
@@ -35,7 +33,7 @@ JNIEXPORT jintArray JNICALL Java_InsertionSort_runInsertionSort(
 	if (output == NULL) {
 		return NULL;
 	}
-	(*env)->SetIntArrayRegion(env, output, 0, value_length, value);
+	(*env)->SetIntArrayRegion(env, output, 0, value_length, in_value);
 	return output;
 }
 
