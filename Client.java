@@ -17,8 +17,10 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import javax.crypto.ShortBufferException;
+import java.util.Scanner;
 
-// JSON
+// Encryption
+import TEA.*;
 
 
 public class Client {
@@ -30,7 +32,7 @@ public class Client {
 	private PrivateKey secretKey;
 	private PublicKey publicKey;
 	private PublicKey serverKey;
-	private Key sharedKey;
+	private byte[] sharedKey;
 
 	// public Client(String user, String pass) {
 	// 	// constrcutor for client
@@ -68,6 +70,25 @@ public class Client {
 			System.out.println("Client request failed.");
 			System.exit(-1);
 		}
+
+		// authentication goes here
+		String wantMore = "y";
+		Scanner input = new Scanner(System.in);
+		while (wantMore.equals("y")) {
+			System.out.print("Enter filename to request: ");
+			try {
+				client.sendRequest(input.nextLine());
+			} catch (Exception e) {
+				System.out.println(e.toString());
+			}
+			System.out.print("Another request? [y/N]: ");
+			wantMore = input.nextLine();
+			if (wantMore.equals("y")) {
+				client.continueSession();
+			}
+		}
+		client.sendEndOfSessionRequest();
+
 	}
 
 	private void generateKeys() throws NoSuchAlgorithmException, IOException {
@@ -106,7 +127,52 @@ public class Client {
 		KeyAgreement sharedKeyGenerator = KeyAgreement.getInstance("DH");
 		sharedKeyGenerator.init(secretKey);
 		sharedKeyGenerator.doPhase(serverKey, true);
-		byte [] sharedKey = new byte[500];
+		sharedKey = new byte[500];
 		sharedKeyGenerator.generateSecret(sharedKey, 0);
+	}
+
+	/**
+	* Sends a request to the server to retrieve a file
+	**/
+	private void sendRequest(String filename) throws IOException, 
+			ClassNotFoundException{
+		System.out.println("Requesting " + filename + "...");
+		// encrypt the filename
+		int [] message = TEAEncrypt.encrypt(
+			filename, sharedKey);
+
+		// send encrypted data
+		out.writeObject(message);
+		System.out.println("Sent request...");
+		System.out.println("waiting for response from server");
+
+		// get encrypted response
+		int [] response = (int []) in.readObject();
+		String strResponse = TEADecrypt.decryptToString(response, sharedKey);
+		if (strResponse.equals("ERROR")) {
+			System.out.println("File not found!");
+			return;
+		}
+	}
+
+	private void sendEndOfSessionRequest() {
+		System.out.println("Ending session...");
+		String unencrypted = "DONE";
+		int [] encrypted = TEAEncrypt.encrypt(unencrypted, sharedKey);
+		try {
+			out.writeObject(encrypted);
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
+	}
+
+	private void continueSession() {
+		String unencrypted = "MORE";
+		int [] encrypted = TEAEncrypt.encrypt(unencrypted, sharedKey);
+		try {
+			out.writeObject(encrypted);
+		} catch (Exception e) {
+			System.out.println(e.toString());
+		}
 	}
 }

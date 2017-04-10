@@ -7,10 +7,6 @@ import java.util.Random;
 import java.security.SecureRandom;
 import javax.crypto.KeyGenerator;
 import java.security.Key;
-import java.nio.charset.Charset;
-
-import TEA.*;
-
 
 
 public class ShadowTableGenerator {
@@ -41,7 +37,7 @@ public class ShadowTableGenerator {
 		createShadowFile();
 
 		// for testing only 
-		System.out.println(checkPassword("user1", "abcdefg"));
+		checkPassword("user1", "abcdefg");
 	}
 
 	private static void welcomeWarning() {
@@ -92,7 +88,7 @@ public class ShadowTableGenerator {
     		byte[] random = new byte[32];
     		Random randomGenerator = new SecureRandom();
     		randomGenerator.nextBytes(random);
-    		String salt = new String(random, Charset.forName("UTF-8"));
+    		String salt = new String(random);
 
 	   		// hash the password + salt
     		int[] hash = TEAEncrypt.encrypt(password+salt, key);
@@ -127,7 +123,7 @@ public class ShadowTableGenerator {
 		    // String output = "";
 		    for(ArrayList<String> line: writeValues) {
 		    	for(String word: line) {
-		    		bw.write(word + ":");
+		    		bw.write(word + ",");
 		    	}
 		    	bw.write("\n");
 		    	bw.flush();
@@ -154,19 +150,16 @@ public class ShadowTableGenerator {
     	}
     	ArrayList<String> usernames = new ArrayList<String>();
     	for (String line: lines) {
-    		String [] words = line.split(":");
-            try {
-    	       usernames.add(words[0]);
-               System.out.println(words[0]);
-           } catch (Exception e) {}
-    	}      
+    		String [] words = line.split(",");
+    		System.out.println(line);
+    		usernames.add(words[0]);
+    	}
     	// should we make this case insensitive in the future? 
     	// anyways now that we have the usernames lets check if our input
     	// is an existing user
     	Boolean isUser = false;
     	for (String username: usernames) {
     		if (user.equals(username)) {
-                // System.out.println(username);
     			isUser = true;
     			break;
     		}
@@ -177,22 +170,19 @@ public class ShadowTableGenerator {
     	String salt = "";
     	String hash = "";
     	for (String line: lines) {
-    		String [] words = line.split(":");
-            try {
-        		if (words[0].equals(user)) {
-        			salt = words[1];
-        			hash = words[2];
-        		}
-            } catch (Exception e) {}
+    		String [] words = line.split(",");
+    		if (words[0].equals(user)) {
+    			salt = words[1];
+    			hash = words[2];
+    		}
     	}
-        System.out.println("salt: " + salt);
     	int[] newHash = TEAEncrypt.encrypt(pass + salt, key);
     	String checkHash = "";
     	for(int i: newHash) {
     		checkHash = checkHash + String.valueOf(i);
     	}
-    	// System.out.println(checkHash);
-    	// System.out.println(hash);
+    	System.out.println(checkHash);
+    	System.out.println(hash);
     	return checkHash.equals(hash);
 
 	}

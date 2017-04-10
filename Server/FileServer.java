@@ -2,13 +2,9 @@
 // as a starting point for the server class. 
 // it can be found here: http://cs.lmu.edu/~ray/notes/javanetexamples/
 
+package Server;
 
 import java.net.ServerSocket;
-import java.nio.file.*;
-import static java.nio.file.FileVisitResult.*;
-import java.io.IOException;
-import java.nio.file.attribute.BasicFileAttributes;
-
 
 public class FileServer {
 	public static void main(String [] args) {
@@ -38,5 +34,4 @@ public class FileServer {
 			serverSocket.close();
 		} catch(Exception ex) {}
 	}
-
 }

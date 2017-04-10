@@ -1,6 +1,7 @@
 // please note that example code from Loyola Marymount University was used
 // as a starting point for the thread class. 
 // it can be found here: http://cs.lmu.edu/~ray/notes/javanetexamp
+package Server;
 import TEA.*;
 // crypto
 import javax.crypto.KeyGenerator;
@@ -32,14 +33,12 @@ public class ServerThread extends Thread {
 	private PublicKey publicKey;
 	private PublicKey clientKey;
 	private byte[] sharedKey;
-	private boolean wantMore;
 	
 	public ServerThread(Socket socket, int requestNumber) {
 		this.socket = socket;
 		this.requestNumber = requestNumber;
 		System.out.println("Request num: " + String.valueOf(requestNumber) +
 				" started new thread with socket: " + socket.toString());
-		wantMore = true;
 		// fm = new FileManager();
 	}
 
@@ -51,9 +50,7 @@ public class ServerThread extends Thread {
 
 		// authenticate
 		try {
-			while(wantMore) {
-				getRequest();
-			}
+			getRequest();
 		} catch (Exception e) {}
 
 	}
@@ -98,7 +95,6 @@ public class ServerThread extends Thread {
 	}
 
 	private void getRequest() throws IOException, ClassNotFoundException {
-		System.out.println("waiting for request");
 		// read in the request
 		int [] request = (int []) in.readObject();
 		String filename = TEADecrypt.decryptToString(request, sharedKey);
@@ -110,14 +106,8 @@ public class ServerThread extends Thread {
 		if (!file.exists()) {
 			// let the client know we can't find this file
 			String error = "ERROR";
-			int [] encrypted = TEAEncrypt.encrypt(error, sharedKey);
-			out.writeObject(encrypted);
-			System.out.println(filename + " does not exist.");
-			wantMore = checkIfClientWantsMore();
-			return;
+			
 		}
-
-
 
 	}
 
@@ -132,24 +122,5 @@ public class ServerThread extends Thread {
 		sharedKeyGenerator.doPhase(clientKey, true);
 		sharedKey = new byte[500];
 		sharedKeyGenerator.generateSecret(sharedKey, 0);
-	}
-
-	private Boolean checkIfClientWantsMore() {
-		System.out.println("waiting for client" + String.valueOf(
-					requestNumber));
-		String decrypted = "";
-		try {
-			int [] encrypted = (int []) in.readObject();
-			decrypted = TEADecrypt.decryptToString(encrypted, sharedKey);
-		} catch (Exception e) {
-			e.toString();
-			return false;
-		}
-		if(decrypted.equals("MORE")) {
-			return true;
-		}
-		else {
-			return false;
-		}
 	}
 }

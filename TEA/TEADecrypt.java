@@ -1,6 +1,6 @@
 // Adapted from insertion sort in first project
 
-
+package TEA;
 // JNI tutorial used as reference: 
 // https://www3.ntu.edu.sg/home/ehchua/programming/java/JavaNativeInterface.html
 import java.util.Scanner;
@@ -8,10 +8,10 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
-public class TEAEncrypt {
+public class TEADecrypt {
 	// private int[] result;
 	static {
-		System.load("/Users/jm/code/secureCommunications/libTEAEncrypt.dylib");
+		System.load("/Users/jm/code/secureCommunications/TEA/libTEADecrypt.dylib");
 	}
 
 	// public InsertionSort(int[] inputData) {
@@ -23,7 +23,7 @@ public class TEAEncrypt {
 	// }
 
 	// native method
-	private native int[] runTEAEncrypt(int[] value, int[] key);
+	private native int[] runTEADecrypt(int[] value, int[] key);
 
 	// Driver (as main for initial testing only)
 	public static void main(String [] args) {
@@ -41,19 +41,15 @@ public class TEAEncrypt {
 		(byte) 0xbfbd, (byte) 0x1aef, (byte) 0xbfbd, (byte) 0x52ef, 
 		(byte) 0xbfbd, (byte) 0x3647, (byte) 0xd1b2, (byte) 0xefbf, 
 		(byte) 0xbd71, (byte) 0x074d, (byte) 0x1400, (byte) 0x750a}; 
-		String string = "Hello World!!";
+		String string = "Hello World!!!";
 		// byte[] byteValue = new byte[string.length() + 
 		// 			(4-(string.length()%4))]; // add necessary padding
 		// byteValue  = byteValue + pad;
 
-		int [] value = convertStringToIntArray(string);
-		int [] key = convertStringToIntArray(new String(
-			byteKey, Charset.forName("UTF-8")));
-		int [] result = encrypt(value, key);
-		for (int i: result) {
-			System.out.println(i);
-		}
-		System.out.println("survived");
+		String test = "hello world!!";
+		int [] encrypted = TEAEncrypt.encrypt(test, byteKey);
+		int [] result = decrypt(encrypted, byteKey);
+		System.out.println(convertIntArrayToString(result));
 
 		// encrypt(value, key);
 		// TEAEncrypt.encrypt(value.getInt(), key.getInt());
@@ -64,22 +60,51 @@ public class TEAEncrypt {
 		// }
 	}
 
-	public static int[] encrypt(String value, String key) {
-		return encrypt(convertStringToIntArray(value), 
+		public static String decryptToString(String value, String key) {
+		return convertIntArrayToString(decrypt(convertStringToIntArray(value), 
+					convertStringToIntArray(key)));
+	}
+
+	public static String decryptToString(String value, byte[] key) {
+		return convertIntArrayToString(decrypt(convertStringToIntArray(value), 
+					convertStringToIntArray(new String(key, 
+						Charset.forName("UTF-8")))));
+	}
+
+	public static String decryptToString(int[] value, int[] key) {
+		int [] result = new TEADecrypt().runTEADecrypt(value, key);
+		return convertIntArrayToString(result);
+	}
+
+	public static String decryptToString(int [] value, byte[] key) {
+		int [] result = new TEADecrypt().runTEADecrypt(value  ,
+			convertStringToIntArray(new String(
+				key, Charset.forName("UTF-8"))));
+		return convertIntArrayToString(result);
+	}
+	public static int[] decrypt(String value, String key) {
+		return decrypt(convertStringToIntArray(value), 
 					convertStringToIntArray(key));
 	}
 
-	public static int[] encrypt(String value, byte[] key) {
-		return encrypt(convertStringToIntArray(value), 
+	public static int[] decrypt(String value, byte[] key) {
+		return decrypt(convertStringToIntArray(value), 
 					convertStringToIntArray(new String(key, 
 						Charset.forName("UTF-8"))));
 	}
 
-	public static int[] encrypt(int[] value, int[] key) {
-		// mem count is stored in the last element of the array
-		int [] result = new TEAEncrypt().runTEAEncrypt(value, key);
+	public static int[] decrypt(int[] value, int[] key) {
+		int [] result = new TEADecrypt().runTEADecrypt(value, key);
 		return result;
 	}
+
+	public static int[] decrypt(int [] value, byte[] key) {
+		int [] result = new TEADecrypt().runTEADecrypt(value  ,
+			convertStringToIntArray(new String(
+				key, Charset.forName("UTF-8"))));
+		return result;
+	}
+
 
 	public static int[] convertStringToIntArray(String string) {
 		while (string.getBytes().length % 8 != 0) {
@@ -96,5 +121,23 @@ public class TEAEncrypt {
 
 		}
 		return input;
+	}
+
+	public static String convertIntArrayToString(int [] array) {
+		String result = "";
+		for (int i: array) {
+			result = result + convertIntToChar(i);
+		}
+		return result.trim();
+	}
+
+	// http://stackoverflow.com/questions/5328996/java-change-int-to-ascii
+	private static String convertIntToChar(int input) {
+		int length = 4;
+    	StringBuilder builder = new StringBuilder(length);
+    	for (int i = length - 1; i >= 0; i--) {
+        	builder.append((char) ((input >> (8 * i)) & 0xFF));
+    	}
+    	return builder.toString();
 	}
 }
