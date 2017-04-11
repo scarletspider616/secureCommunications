@@ -41,7 +41,7 @@ public class ShadowTableGenerator {
 		createShadowFile();
 
 		// for testing only 
-		System.out.println(checkPassword("user1", "abcdefg"));
+		// System.out.println(checkPassword("user2", "abcdefg"));
 	}
 
 	private static void welcomeWarning() {
@@ -71,7 +71,6 @@ public class ShadowTableGenerator {
     	} catch (Exception e) {
     		System.out.println(e.toString());
     	}
-
     	lines = hashAndSalt(data);
     	writeValues(lines);
     }
@@ -89,17 +88,17 @@ public class ShadowTableGenerator {
 
     		// generate 32-bit salt
     		//http://stackoverflow.com/questions/18142745/how-do-i-generate-a-salt-in-java-for-salted-hash
-    		byte[] random = new byte[32];
-    		Random randomGenerator = new SecureRandom();
-    		randomGenerator.nextBytes(random);
-    		String salt = new String(random, Charset.forName("UTF-8"));
+    		int[] random = new int[4];
+            Random randomGenerator = new Random();
+            for (int i = 0; i < 4; i++) {
+                random[i] = randomGenerator.nextInt();
+            }
+            String salt = getHexString(random);
+
 
 	   		// hash the password + salt
     		int[] hash = TEAEncrypt.encrypt(password+salt, key);
-    		String hashedPass = "";
-    		for (int i: hash) {
-    			hashedPass = hashedPass + String.valueOf(i) +  " ";
-    		}
+    		String hashedPass = getHexString(hash);
     		hashedPass = hashedPass + "\n";
     		temp.add(username);
     		temp.add(salt);
@@ -136,7 +135,7 @@ public class ShadowTableGenerator {
 			e.printStackTrace();
 		}
 	    System.out.println(
-	    	"Random vals should be available in " + outputFilename);
+	    	"Data available in  " + outputFilename);
 	}
 
 	public static Boolean checkPassword(String user, String pass) {
@@ -157,7 +156,6 @@ public class ShadowTableGenerator {
     		String [] words = line.split(":");
             try {
     	       usernames.add(words[0]);
-               System.out.println(words[0]);
            } catch (Exception e) {}
     	}      
     	// should we make this case insensitive in the future? 
@@ -185,15 +183,52 @@ public class ShadowTableGenerator {
         		}
             } catch (Exception e) {}
     	}
-        System.out.println("salt: " + salt);
     	int[] newHash = TEAEncrypt.encrypt(pass + salt, key);
-    	String checkHash = "";
-    	for(int i: newHash) {
-    		checkHash = checkHash + String.valueOf(i);
-    	}
+    	String checkHash = getHexString(newHash);
     	// System.out.println(checkHash);
     	// System.out.println(hash);
     	return checkHash.equals(hash);
 
 	}
+
+    public static boolean checkUsername(String user) {
+        ArrayList<String> lines = new ArrayList<String>();
+        try (BufferedReader br = new BufferedReader(
+                new FileReader(".passwords"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                lines.add(line);
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+        ArrayList<String> usernames = new ArrayList<String>();
+        for (String line: lines) {
+            String [] words = line.split(":");
+            try {
+               usernames.add(words[0]);
+           } catch (Exception e) {}
+        }      
+        // should we make this case insensitive in the future? 
+        // anyways now that we have the usernames lets check if our input
+        // is an existing user
+        Boolean isUser = false;
+        for (String username: usernames) {
+            if (user.equals(username)) {
+                // System.out.println(username);
+                isUser = true;
+                break;
+            }
+        }
+        return isUser;
+    }
+
+    private static String getHexString(int [] ints) {
+        String hex = "";
+        for (int i: ints) {
+            hex = hex + Integer.toHexString(i);
+        }
+        return hex;
+    }
 }
+    

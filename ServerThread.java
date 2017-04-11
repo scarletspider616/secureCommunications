@@ -50,12 +50,15 @@ public class ServerThread extends Thread {
 			handshakeWithClient();
 		} catch (Exception e) {}
 
-		// authenticate
-		try {
-			while(wantMore) {
-				getRequest();
-			}
-		} catch (Exception e) {}
+		if(authenticate()) {
+			System.out.println(authenticate());
+
+			try {
+				while(wantMore) {
+					getRequest();
+				}
+			} catch (Exception e) {}
+		}
 
 	}
 
@@ -96,6 +99,26 @@ public class ServerThread extends Thread {
 
 		// create shared key
 		createSharedKey();
+	}
+
+	private boolean authenticate() {
+		System.out.println("authenticating " + String.valueOf(requestNumber));
+		try {
+			String user = TEADecrypt.decryptToString((int []) in.readObject(),
+							sharedKey);
+			if (ShadowTableGenerator.checkUsername(user)) {
+				out.writeObject(TEAEncrypt.encrypt("y", sharedKey));
+				String pass = TEADecrypt.decryptToString((int []) in.readObject(),
+								sharedKey);
+				if(ShadowTableGenerator.checkPassword(user, pass)) {
+					System.out.println("auth sucessful");
+					out.writeObject(TEAEncrypt.encrypt("y", sharedKey));
+					return true;
+				}
+
+			}
+		} catch (Exception e) {}
+		return false;
 	}
 
 	private void getRequest() throws IOException, ClassNotFoundException {

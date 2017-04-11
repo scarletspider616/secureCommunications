@@ -20,6 +20,7 @@ import javax.crypto.ShortBufferException;
 import java.util.Scanner;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.Console;
 
 // Encryption
 import TEA.*;
@@ -76,7 +77,7 @@ public class Client {
 			System.exit(-1);
 		}
 
-		// authentication goes here
+		client.authenticate();
 		String wantMore = "y";
 		Scanner input = new Scanner(System.in);
 		while (wantMore.equals("y")) {
@@ -103,6 +104,49 @@ public class Client {
 		KeyPair keys = keyGen.genKeyPair();
 		secretKey = keys.getPrivate();
 		publicKey = keys.getPublic();
+	}
+
+	// https://www.tutorialspoint.com/java/io/console_readpassword.htm
+	private void authenticate() {
+		// System.out.print("username: ");
+		// Scanner scanner = new Scanner(System.in);
+		// String user = scanner.nextLine();
+		// System.out.println("password: ");
+		// String pass = scanner.nextLine();
+		Console console = null;
+		String user = null;
+		String pass = null;
+		try {
+			console = System.console();
+			if (console != null) {
+				user = console.readLine("username: ");
+				pass = new String(console.readPassword("password: "));
+			}
+
+		} catch (Exception e) {}
+		try {
+			out.writeObject(TEAEncrypt.encrypt(user, sharedKey));
+			String ack = TEADecrypt.decryptToString((int []) in.readObject(), 
+						sharedKey);
+			if (ack.equals("y")) {
+				System.out.println("sending pass..");
+				out.writeObject(TEAEncrypt.encrypt(pass, sharedKey));
+				ack = TEADecrypt.decryptToString((int []) in.readObject(), 
+						sharedKey);
+				System.out.println(ack);
+				if (ack.equals("y")) {
+					System.out.println("Successful");
+					return;
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			System.out.println("Login failed, quitting...");
+			System.exit(-1);
+		}
+		System.out.println("Login failed, quitting...");
+		System.exit(-1);
+
 	}
 
 	private void handshakeWithServer() throws IOException, 
