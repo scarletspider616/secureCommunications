@@ -62,3 +62,4 @@ setjavapath:
 
 clean:
 	rm -f *.class libTEAEncrypt.* *.h *.log *.o libTEADecrypt.* 
+	rm -f TEA/*.class TEA/*.dylib TEA/*.so TEA/*.h TEA/*.o

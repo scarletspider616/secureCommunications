@@ -198,6 +198,7 @@ public class Client {
 		// get encrypted response
 		int [] response = (int []) in.readObject();
 		String strResponse = TEADecrypt.decryptToString(response, sharedKey);
+		System.out.println(strResponse);
 		if (strResponse.equals("ERROR")) {
 			System.out.println("File not found!");
 			return;
@@ -213,7 +214,9 @@ public class Client {
 		String path = scanner.nextLine() + filename;
 		int [] fileData = null;
 		try {
+			System.out.println("Receiving data");
 			fileData = (int []) in.readObject();
+			System.out.println("data received");
 		} catch (Exception e) {}
 		String fileDump = TEADecrypt.decryptToString(fileData, sharedKey);
 

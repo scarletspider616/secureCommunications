@@ -51,7 +51,6 @@ public class ServerThread extends Thread {
 		} catch (Exception e) {}
 
 		if(authenticate()) {
-			System.out.println(authenticate());
 
 			try {
 				while(wantMore) {
@@ -117,6 +116,8 @@ public class ServerThread extends Thread {
 				}
 
 			}
+			out.writeObject(TEAEncrypt.encrypt("n", sharedKey));
+			return false;
 		} catch (Exception e) {}
 		return false;
 	}
@@ -129,6 +130,7 @@ public class ServerThread extends Thread {
 
 		// check if file exists in data dir
 		filename = "data/" + filename;
+		System.out.println(filename);
 		File file = new File(filename);
 
 		if (!file.exists()) {
@@ -141,6 +143,7 @@ public class ServerThread extends Thread {
 			return;
 		}
 		String message = "Sending file";
+		System.out.println(message);
 		int [] encryptedMessage = TEAEncrypt.encrypt(message, sharedKey);
 		out.writeObject(encryptedMessage);
 		// otherwise lets encrypt and send off the file!
