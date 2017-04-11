@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import javax.crypto.ShortBufferException;
 import java.io.File;
+import java.util.Scanner;
 
 
 public class ServerThread extends Thread {
@@ -116,9 +117,13 @@ public class ServerThread extends Thread {
 			wantMore = checkIfClientWantsMore();
 			return;
 		}
-
-
-
+		String message = "Sending file";
+		int [] encryptedMessage = TEAEncrypt.encrypt(message, sharedKey);
+		out.writeObject(encryptedMessage);
+		// otherwise lets encrypt and send off the file!
+		String fileDump = readFile(filename);
+		int [] data = TEAEncrypt.encrypt(fileDump, sharedKey);
+		out.writeObject(data);
 	}
 
 	private void createSharedKey() throws NoSuchAlgorithmException,
@@ -132,6 +137,19 @@ public class ServerThread extends Thread {
 		sharedKeyGenerator.doPhase(clientKey, true);
 		sharedKey = new byte[500];
 		sharedKeyGenerator.generateSecret(sharedKey, 0);
+	}
+
+	private String readFile(String filename) {
+		Scanner scanner = null;
+		try {
+			scanner = new Scanner(new File(filename));
+		} catch (Exception e) {}
+
+		String result = "";
+		while (scanner.hasNextLine()) {
+			result = result + scanner.nextLine() + "\n";
+		}
+		return result;
 	}
 
 	private Boolean checkIfClientWantsMore() {

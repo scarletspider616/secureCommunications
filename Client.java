@@ -18,9 +18,14 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import javax.crypto.ShortBufferException;
 import java.util.Scanner;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 // Encryption
 import TEA.*;
+
+// misc
+import java.util.ArrayList;
 
 
 public class Client {
@@ -153,6 +158,35 @@ public class Client {
 			System.out.println("File not found!");
 			return;
 		}
+		else {
+			receiveFile(filename);
+		}
+	}
+
+	private void receiveFile(String filename) {
+		System.out.println("Please specify the dir (enter for curr)");
+		Scanner scanner = new Scanner(System.in);
+		String path = scanner.nextLine() + filename;
+		int [] fileData = null;
+		try {
+			fileData = (int []) in.readObject();
+		} catch (Exception e) {}
+		String fileDump = TEADecrypt.decryptToString(fileData, sharedKey);
+
+		// http://stackoverflow.com/questions/12350248/java-difference-between-filewriter-and-bufferedwriter
+		System.out.println("writing file...");
+		try {
+		    BufferedWriter bw = new BufferedWriter(
+		    	new FileWriter(filename));
+		    // String output = "";
+		    bw.write(fileDump);
+		    bw.flush();
+		 } catch (Exception e) {
+			e.printStackTrace();
+		}
+	    System.out.println(
+	    	"File is avaialable at " + path);
+
 	}
 
 	private void sendEndOfSessionRequest() {
