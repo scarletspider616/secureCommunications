@@ -150,6 +150,7 @@ public class ServerThread extends Thread {
 		String fileDump = readFile(filename);
 		int [] data = TEAEncrypt.encrypt(fileDump, sharedKey);
 		out.writeObject(data);
+		wantMore = checkIfClientWantsMore();
 	}
 
 	private void createSharedKey() throws NoSuchAlgorithmException,
