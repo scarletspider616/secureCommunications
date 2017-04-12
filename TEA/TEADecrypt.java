@@ -7,11 +7,12 @@ import java.util.Scanner;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import TEA.*;
 
 public class TEADecrypt {
 	// private int[] result;
 	static {
-		System.load("/Users/jm/code/secureCommunications/TEA/libTEADecrypt.dylib");
+		System.loadLibrary("TEADecrypt");
 	}
 
 	// public InsertionSort(int[] inputData) {
@@ -46,10 +47,10 @@ public class TEADecrypt {
 		// 			(4-(string.length()%4))]; // add necessary padding
 		// byteValue  = byteValue + pad;
 
-		String test = "hello world!!";
-		int [] encrypted = TEAEncrypt.encrypt(test, byteKey);
-		int [] result = decrypt(encrypted, byteKey);
-		System.out.println(convertIntArrayToString(result));
+		// String test = "hello world!!";
+		// int [] encrypted = TEAEncrypt.encrypt(test, byteKey);
+		// int [] result = decrypt(encrypted, byteKey);
+		// System.out.println(convertIntArrayToString(result));
 
 		// encrypt(value, key);
 		// TEAEncrypt.encrypt(value.getInt(), key.getInt());
@@ -72,12 +73,12 @@ public class TEADecrypt {
 	}
 
 	public static String decryptToString(int[] value, int[] key) {
-		int [] result = new TEADecrypt().runTEADecrypt(value, key);
+		int [] result = decrypt(value, key);
 		return convertIntArrayToString(result);
 	}
 
 	public static String decryptToString(int [] value, byte[] key) {
-		int [] result = new TEADecrypt().runTEADecrypt(value  ,
+		int [] result = decrypt(value  ,
 			convertStringToIntArray(new String(
 				key, Charset.forName("UTF-8"))));
 		return convertIntArrayToString(result);
@@ -94,12 +95,18 @@ public class TEADecrypt {
 	}
 
 	public static int[] decrypt(int[] value, int[] key) {
-		int [] result = new TEADecrypt().runTEADecrypt(value, key);
+		int [] result = new int[value.length];
+		for (int i = 0; i < value.length-1; i+=2) {
+			int [] temp = new TEADecrypt().runTEADecrypt(
+				new int[] {value[i], value[i+1]}, key);
+			result[i] = temp[0];
+			result[i+1] = temp[1];
+		}
 		return result;
 	}
 
 	public static int[] decrypt(int [] value, byte[] key) {
-		int [] result = new TEADecrypt().runTEADecrypt(value  ,
+		int [] result = decrypt(value  ,
 			convertStringToIntArray(new String(
 				key, Charset.forName("UTF-8"))));
 		return result;

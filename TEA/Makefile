@@ -33,15 +33,15 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 decryption: all
-	java -Djava.library.path=. TEA.TEADecrypt
+	java -Djava.library.path=. TEADecrypt
 encryption: all
-	java -Djava.library.path=. TEA.TEAEncrypt
+	java -Djava.library.path=. TEAEncrypt
 
 all: compilejava createJNIheader makenative linklibrary setjavapath
 
 compilejava: 
-	javac TEA/TEAEncrypt.java
-	javac TEA/TEADecrypt.java
+	javac TEAEncrypt.java
+	javac TEADecrypt.java
 
 createJNIheader: 
 	javah TEA.TEAEncrypt

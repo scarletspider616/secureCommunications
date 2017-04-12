@@ -8,11 +8,12 @@ import java.util.Scanner;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import TEA.*;
 
 public class TEAEncrypt {
 	// private int[] result;
 	static {
-		System.load("/Users/jm/code/secureCommunications/TEA/libTEAEncrypt.dylib");
+		System.loadLibrary("TEAEncrypt");
 	}
 
 	// public InsertionSort(int[] inputData) {
@@ -78,7 +79,21 @@ public class TEAEncrypt {
 
 	public static int[] encrypt(int[] value, int[] key) {
 		// mem count is stored in the last element of the array
-		int [] result = new TEAEncrypt().runTEAEncrypt(value, key);
+		if (value.length%2 == 0) {
+			int [] temp = new int[value.length+1];
+			for(int i = 0; i < value.length; i++) {
+				temp[i] = value[i];
+			}
+			temp[value.length] = convertStringToIntArray("    ")[0];
+			value = temp;
+		}
+		int [] result = new int[value.length];
+		for (int i = 0; i < value.length-1; i+=2) {
+			int [] temp = new TEAEncrypt().runTEAEncrypt(
+				new int[] {value[i], value[i+1]}, key);
+			result[i] = temp[0];
+			result[i+1] = temp[1];
+		}
 		return result;
 	}
 
