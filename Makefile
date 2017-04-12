@@ -7,8 +7,8 @@ CARGS=
 
 MACFLAGS=-c -fPIC -I/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers/ 
 
-LINUXFLAGS=-shared -fpic -o encrypt.so -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux/ 
-LINUXFLAGS2=-shared -fpic -o decrypt.so -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux/
+LINUXFLAGS=-shared -fpic -o libTEAEncrypt.so -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux/ 
+LINUXFLAGS2=-shared -fpic -o libTEADecrypt.so -I$(JAVA_HOME)/include/ -I$(JAVA_HOME)/include/linux/
 
 LINUXARGS=encrypt.c
 LINUXARGS2=decrypt.c
@@ -33,7 +33,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 decryption: all
-	java -Djava.library.path=. TEA.TEADecrypt
+	java -Djava.library.path=.:TEA/ TEA.TEADecrypt
 encryption: all
 	java -Djava.library.path=. TEA.TEAEncrypt
 
